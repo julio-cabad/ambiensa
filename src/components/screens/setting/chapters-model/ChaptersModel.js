@@ -7,16 +7,7 @@ import {StoreContext} from '../../../../stores/Context';
 import bgImage from '../../../../../assets/img/bgImage.jpg';
 import Header from '../../../../palette/Header';
 import {FlashList} from '@shopify/flash-list';
-import {
-    editIcon,
-    modelsImg,
-    paperclipIcon,
-    percentIcon,
-    rightArrowImg,
-    saveBottomModalIcon,
-    settingsImg_,
-} from '../../../../utils/Icons';
-import {async} from '@babel/runtime/helpers/regeneratorRuntime';
+import {editIcon, modelsImg, paperclipIcon, saveBottomModalIcon} from '../../../../utils/Icons';
 import {MAIN_URL} from '../../../../utils/Const';
 import axios from 'axios';
 import {alerts, generalError} from '../../../../palette/Alerts';
@@ -28,17 +19,16 @@ import {ScrollView} from 'react-native-gesture-handler';
 import {runInAction} from 'mobx';
 import {Filters, UpdateArray} from '../../../../utils/HelpFunctions';
 
-
 function ChaptersModel() {
 
     const {dataStore} = useContext(StoreContext);
-    const {chapters, models, userData} = dataStore;
+    const {chapters, models, userData, chapterModel} = dataStore;
     const {idEmpresa} = userData;
 
     const [loading, setLoading] = useState(false);
     const [trigger, setTrigger] = useState(false);
     const [row, setRow] = useState(null);
-    const [chapterModel, setChapterModel] = useState(null);
+    const [chapterModel_, setChapterModel] = useState(chapterModel);
     const [chapters_, setChapter_] = useState(chapters);
     const [chaptersArr, setChapterArr] = useState([]);
     const bottomSheetModalRef = useRef(null);
@@ -48,19 +38,7 @@ function ChaptersModel() {
 
     useEffect(() => {
         const GetChaptersMode = async () => {
-            let chapterModelArr = [];
-            for (const item of models) {
-                const {id} = item;
-                const url = MAIN_URL + `/capitulopormodelo/${idEmpresa}/${id}`;
-                try {
-                    const res = await axios.get(url);
-                    chapterModelArr = [...chapterModelArr, ...res.data];
-                } catch (e) {
-                    ///console.log(e)
-                }
-            }
-
-            setChapterModel(chapterModelArr);
+            setChapterModel(chapterModel);
 
             runInAction(() => {
                 c.forEach(item => {
@@ -72,8 +50,27 @@ function ChaptersModel() {
 
         (chapters && models) && GetChaptersMode();
 
-
     }, [models, chapters, trigger]);
+
+    useEffect(() => {
+        if (chapterModel_ && row) {
+            const filterChapterModel = Filters(chapterModel_, 'id_modelo', row?.id);
+            const chapters = [...chapters_];
+
+            chapters.forEach(items => {
+                const {id} = items;
+                filterChapterModel.forEach(cm => {
+                    const {id_capitulo} = cm;
+                    if (id === id_capitulo) {
+                        runInAction(() => {
+                            items.check = true;
+                        });
+                    }
+                });
+            });
+            setChapter_(chapters);
+        }
+    }, [chapterModel_, row]);
 
     const navigation = useNavigation();
 
@@ -82,32 +79,14 @@ function ChaptersModel() {
     }, []);
 
     const handleSheetChanges = useCallback((index: number) => {
-
+        index === -1 && setRow(null);
     }, []);
 
-    const onPressBack = () => {
-        navigation.navigate('Settings');
-    };
+    const onPressBack = () => navigation.navigate('Settings');
 
 
     const onEdit = (item) => {
         setRow(item);
-        const filterChapterModel = Filters(chapterModel, 'id_modelo', item?.id);
-        const chapters = [...chapters_];
-
-        chapters.forEach(items => {
-            const {id} = items;
-            filterChapterModel.forEach(cm => {
-                const {id_capitulo} = cm;
-                if (id === id_capitulo) {
-                    runInAction(() => {
-                        items.check = true;
-                    });
-                }
-            });
-        });
-
-        setChapter_(chapters);
         handlePresentModalPress();
     };
 
@@ -116,8 +95,6 @@ function ChaptersModel() {
         const updateChapters = UpdateArray(chapters_, 'id', id, 'check', !check);
         const filterChapters = Filters(updateChapters, 'check', true);
         const chaptersArr = [];
-        /*const newObj = {id_empresa: idEmpresa, id_modelo: row?.id, id_capitulo: id};
-        console.log(newObj);*/
         filterChapters.map(items => chaptersArr.push(items.id));
         setChapter_(updateChapters);
         setChapterArr(chaptersArr);
@@ -133,6 +110,7 @@ function ChaptersModel() {
 
         try {
             await axios.post(url, data);
+            await dataStore.Models(userData, false);
             setTrigger(!trigger);
             setTimeout(() => {
                 bottomSheetModalRef.current?.dismiss();
@@ -140,7 +118,6 @@ function ChaptersModel() {
                 setLoading(false);
             }, 1000);
         } catch (e) {
-            console.log(e);
             bottomSheetModalRef.current?.dismiss();
             generalError();
             setLoading(false);
@@ -149,7 +126,9 @@ function ChaptersModel() {
 
     const renderItem = ({item}) => {
 
-        const {descripcion} = item;
+        const {descripcion, id} = item;
+        const numberChapters = Filters(chapterModel_, 'id_modelo', id);
+
 
         return (
             <View
@@ -158,7 +137,7 @@ function ChaptersModel() {
                     {modelsImg}
                     <View style={tw`ml-2`}>
                         <Text style={tw`text-teal-900 font-bold`}>{descripcion}</Text>
-                        {/*<Text style={tw`shrink text-xs text-orange-500`}>{chapters}</Text>*/}
+                        {/*<Text style={tw`shrink text-xs text-orange-500`}>{`Numero de capitulos : ${numberChapters.length}`}</Text>*/}
                     </View>
                 </View>
 
@@ -175,7 +154,7 @@ function ChaptersModel() {
                 <View style={[tw`flex-1 bg-red-50`]}>
                     <ImageBackground source={bgImage} resizeMode="stretch" style={tw`w-full h-full`}>
                         <Header text={'CAPÍTULOS POR'} text_2={'MODELO'} back onPressBack={onPressBack}/>
-                        {(chapters?.length > 0 && models?.length > 0 && chapterModel) &&
+                        {(chapters?.length > 0 && models?.length > 0 && chapterModel_) &&
                         <View style={tw`flex-1 p-3`}>
                             <FlashList
                                 data={models}
@@ -184,7 +163,7 @@ function ChaptersModel() {
                             />
                         </View>}
 
-                        {(!chapters || !models || !chapterModel) && <Loading/>}
+                        {(!chapters || !models || !chapterModel_) && <Loading/>}
                         {chapters?.length === 0 && <NoData/>}
                     </ImageBackground>
                 </View>
@@ -198,6 +177,7 @@ function ChaptersModel() {
 
                 <ScrollView style={tw`flex-1 p-2`}>
                     {chapters_?.map((items) => {
+
                         const {descripcion, id, check} = items;
                         const bg = check ? 'bg-teal-50' : 'bg-white';
 

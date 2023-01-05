@@ -1,42 +1,29 @@
 import React, {useContext, useState} from 'react';
-import {Keyboard, Text, TouchableOpacity, View} from 'react-native';
+import {ImageBackground, Keyboard, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import tw from 'twrnc';
 import {useNavigation} from '@react-navigation/native';
-import {mainColor, mainColor_, smoothColor, textColor} from '../../../utils/Colors';
-import FilterHeader from '../../../palette/FilterHeader';
-import NoFound from '../../../palette/NoFound';
 import {FlashList} from '@shopify/flash-list';
-import {advancedImg, arrowRIcon, workOrderImg} from '../../../utils/Icons';
+import {arrowRIcon, workOrderImg} from '../../../utils/Icons';
 import {StoreContext} from '../../../stores/Context';
 import {observer} from 'mobx-react-lite';
-import IconANT from 'react-native-vector-icons/AntDesign';
+import bgImage from '../../../../assets/img/bgImage.jpg';
+import Header from '../../../palette/Header';
+import NoData from '../../../palette/NoData';
+import {Filters} from '../../../utils/HelpFunctions';
 
-const data_ = [
-    {project: 'Proyecto 1', batch: '1', mz: '11', OTCode: 401, chapter: 34, percentage: 0},
-    {project: 'Proyecto 2', batch: '2', mz: '22', OTCode: 402, chapter: 66, percentage: 0},
-    {project: 'Proyecto 2', batch: '3', mz: '33', OTCode: 403, chapter: 78, percentage: 0},
-    {project: 'Proyecto 5', batch: '4', mz: '54', OTCode: 404, chapter: 90, percentage: 0},
-];
 
 function AdvanceRecord() {
 
     const {dataStore} = useContext(StoreContext);
-    const {theme} = dataStore;
+    const {workOrders, detailWorkOrders} = dataStore;
+
 
     const [filterValue, setFilterValue] = useState('');
-    const [data, setData] = useState(data_);
+    const [data, setData] = useState('');
 
     const navigation = useNavigation();
 
-    const listColor = !theme ? 'bg-gray-800' : 'bg-blue-50';
-    const textColor_1 = !theme ? 'text-slate-100' : 'text-blue-900 font-semibold';
-    const textColor_2 = !theme ? 'text-gray-400' : 'text-blue-600';
-    const textColor_3 = !theme ? 'text-gray-300' : 'text-blue-400';
-    const textColor_4 = !theme ? 'text-lime-300' : 'text-orange-600 font-semibold';
-
-    const onPressBack = () => {
-        navigation.navigate('Main');
-    };
+    const onPressBack = () => navigation.navigate('Main');
 
     const onFilter = (text) => {
         setFilterValue(text);
@@ -59,27 +46,30 @@ function AdvanceRecord() {
     };
 
     const DetailAdvanceRecord = (item) => {
-        dataStore.DetailAdvanceRecord(item);
-        navigation.navigate('DetailAdvanceRecord');
+        const {uid} = item;
+        console.log(uid)
+        const detailsWorkOrders_ = Filters(detailWorkOrders, 'uid', uid);
+        dataStore.DetailWorkOrders(detailsWorkOrders_);
+        navigation.navigate('DetailListAdvanceRecord');
     };
 
     const renderItem = ({item}) => {
-        const {project, batch, mz, OTCode, chapter, percentage} = item;
+        const {proyecto, urbanizacion, etapa, tiempoejecucion, codigo} = item;
 
         return (
-            <TouchableOpacity style={tw`w-full p-2 flex-row items-center justify-between ${listColor} rounded mt-3`}
-                              onPress={() => DetailAdvanceRecord(item)}>
-                <View style={tw`flex-row items-center`}>
-                    {advancedImg}
-                    <View style={tw`ml-3`}>
-                        <Text style={tw`${textColor_1} text-base font-semibold`}>{`${project}`}</Text>
+            <TouchableOpacity onPress={() => DetailAdvanceRecord(item)}
+                              style={[tw`w-full p-2 flex-row items-center justify-between border-b border-gray-400`, styles.containerStyle]}>
+                <View style={[tw`flex-row items-center`, {width: '85%'}]}>
+                    {workOrderImg}
+                    <View style={tw`ml-2`}>
+                        <Text style={tw`text-teal-900 font-bold text-xs shrink`}>{proyecto}</Text>
+                        <Text style={tw`text-slate-500 text-xs shrink`}>{codigo}</Text>
                         <Text
-                            style={tw`${textColor_2} text-xs`}>{`Mz: ${mz}  Lote: ${batch}  Capitulo : ${chapter}`}</Text>
-                        <Text style={tw`${textColor_3} text-xs`}>{`Código O.T : ${OTCode}`}</Text>
-                        <Text style={tw`${textColor_4} text-xs`}>{`Porcentaje : ${percentage}%`}</Text>
+                            style={tw`text-slate-600 text-xs shrink`}>{`Urb. ${urbanizacion} - Etapa. ${etapa}`}</Text>
+                        <Text style={tw`text-orange-400 text-xs shrink`}>{`T. ejec. ${tiempoejecucion}`}</Text>
                     </View>
                 </View>
-                <View>
+                <View style={[tw`flex-row justify-end`, {width: '15%'}]}>
                     {arrowRIcon}
                 </View>
             </TouchableOpacity>
@@ -87,7 +77,24 @@ function AdvanceRecord() {
     };
 
     return (
-        <View style={[tw`flex-1`, {backgroundColor: !theme ? mainColor : mainColor_}]}>
+
+        <View style={[tw`flex-1`]}>
+            <ImageBackground source={bgImage} resizeMode="stretch" style={tw`w-full h-full`}>
+                <Header text={'REGISTRO'} text_2={'DE AVANCE'} back onPressBack={onPressBack}/>
+                {workOrders?.length > 0 &&
+                <View style={tw`flex-1 p-3`}>
+                    <FlashList
+                        data={workOrders}
+                        renderItem={renderItem}
+                        estimatedItemSize={200}
+                    />
+
+                </View>}
+                {(!workOrders || workOrders?.length === 0) && <NoData/>}
+            </ImageBackground>
+        </View>
+
+        /*<View style={[tw`flex-1`, {backgroundColor: !theme ? mainColor : mainColor_}]}>
             <FilterHeader onPressBack={onPressBack} filterValue={filterValue} onFilter={onFilter}
                           setFilterValue={setFilterValue} setData={setData} data={data_}/>
             {data.length > 0 &&
@@ -102,8 +109,14 @@ function AdvanceRecord() {
             </View>}
 
             {data.length === 0 && <NoFound text_1={'No existen datos.'}/>}
-        </View>
+        </View>*/
     );
 }
 
 export default observer(AdvanceRecord);
+
+const styles = StyleSheet.create({
+    containerStyle: {
+        backgroundColor: 'rgba(0,0,0, 0.05)',
+    },
+});

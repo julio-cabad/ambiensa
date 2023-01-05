@@ -14,7 +14,6 @@ function Header(props) {
 
     const {dataStore} = useContext(StoreContext);
     const {userData} = dataStore;
-    const {nombreUsuario} = userData;
 
     const {text, text_2, onPressBack, back} = props;
 
@@ -30,7 +29,7 @@ function Header(props) {
                         <Image source={{uri: initLogo}} style={[tw`w-full`, styles.imageStyle]}/>
                         <View/>
                     </View>}
-                <Text style={[tw`font-semibold text-white text-base`]}>{nombreUsuario}</Text>
+                <Text style={[tw`font-semibold text-white text-base`]}>{userData?.nombreUsuario}</Text>
             </View>
             <View
                 style={[tw`items-center w-full flex-row items-center justify-around relative`, {height: 50}]}>

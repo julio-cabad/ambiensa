@@ -47,7 +47,6 @@ function ReviewStates() {
         navigation.navigate('Settings');
     };
 
-
     const handlePresentModalPress = useCallback(() => {
         bottomSheetModalRef.current?.present();
     }, []);
@@ -71,7 +70,7 @@ function ReviewStates() {
 
         try {
             await axios.post(url, data);
-            await dataStore.ReviewStates(userData);
+            await dataStore.ReviewStates(userData, false);
             setTimeout(() => {
                 bottomSheetModalRef.current?.dismiss();
                 alerts('success', 'ESTADO GUARDADOS', `Estado guardado exitosamente!`, 2500);
@@ -101,7 +100,7 @@ function ReviewStates() {
 
         try {
             await axios.put(url, data);
-            await dataStore.ReviewStates(userData);
+            await dataStore.ReviewStates(userData, false);
             setTimeout(() => {
                 bottomSheetModalRef.current?.dismiss();
                 alerts('success', 'ESTADO ACUALIZADO', `Estado actualizado exitosamente!`, 2500);
@@ -128,7 +127,7 @@ function ReviewStates() {
 
         try {
             await axios.delete(url);
-            await dataStore.ReviewStates(userData);
+            await dataStore.ReviewStates(userData, false);
             setTimeout(() => {
                 bottomSheetModalRef.current?.dismiss();
                 alerts('success', 'ESTADO ELIMINADO', `Estado eliminado exitosamente!`, 2500);
@@ -191,7 +190,7 @@ function ReviewStates() {
                         <Text style={tw`text-xl text-gray-700 font-bold shrink`}>{idCrud?.description}</Text>
                         {idCrud.id === 'delete' &&
                         <Text
-                            style={tw`text-xs text-red-500 shrink`}>{'Esta seguro que desea liminar eeste estado. ??'}</Text>}
+                            style={tw`text-xs text-red-500 shrink`}>{'Esta seguro que desea eliminar eeste estado. ??'}</Text>}
 
                         {idCrud.id === 'add' &&
                         <TextInput style={tw`w-full border border-teal-600 rounded h-10 mt-3 px-2`}
@@ -245,12 +244,8 @@ function ReviewStates() {
                                 {loading ? <ActivityIndicator size="small" color="gray"/> : deleteModalIcon}
                                 <Text style={tw`text-xs text-teal-900 ml-2`}>Eliminar</Text>
                             </TouchableOpacity>}
-
                         </View>
-
-
                     </View>
-
                 </BottomSheetModal>
 
 
@@ -270,7 +265,6 @@ const styles = StyleSheet.create(
     {
         containerStyle: {
             backgroundColor: 'rgba(0,0,0, 0.05)',
-        }
-        ,
+        },
     },
 );

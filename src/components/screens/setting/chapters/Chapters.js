@@ -16,6 +16,7 @@ import NoData from '../../../../palette/NoData';
 import {MAIN_URL} from '../../../../utils/Const';
 import axios from 'axios';
 import {alerts, generalError} from '../../../../palette/Alerts';
+import {runInAction} from 'mobx';
 
 function Chapters() {
 
@@ -31,11 +32,12 @@ function Chapters() {
     const snapPoints = useMemo(() => ['25%', '83%'], []);
 
     const SelectReset = () => {
-       // const percentages_ = [...percentages];
-        percentages.forEach(items => {
-            items.check = false;
+        runInAction(() => {
+            percentages.forEach(items => {
+                items.check = false;
+            });
+            setPercentagesSelect(percentages);
         });
-        setPercentagesSelect(percentages);
     };
 
     useEffect(() => {
@@ -58,24 +60,24 @@ function Chapters() {
     }, []);
 
     const onEdit = (item) => {
-        setRow(item);
-        const filterPercentageChapter = Filters(percentageChapter, 'id_capitulo', item?.id);
-        setPercentageChapter_(filterPercentageChapter);
-        const percentages_ = [...percentagesSelect];
-        percentages_.forEach(items => {
-            const {id} = items;
-            filterPercentageChapter.forEach(pc => {
-                const {id_porcentaje} = pc;
-                if (id === id_porcentaje) {
-                    console.log(id_porcentaje);
-                    items.check = true;
-                }
+        runInAction(() => {
+            setRow(item);
+            const filterPercentageChapter = Filters(percentageChapter, 'id_capitulo', item?.id);
+            setPercentageChapter_(filterPercentageChapter);
+            const percentages_ = [...percentagesSelect];
+            percentages_.forEach(items => {
+                const {id} = items;
+                filterPercentageChapter.forEach(pc => {
+                    const {id_porcentaje} = pc;
+                    if (id === id_porcentaje) {
+                        items.check = true;
+                    }
+                });
             });
+
+            setPercentagesSelect(percentages_);
+            handlePresentModalPress();
         });
-
-        setPercentagesSelect(percentages_);
-        handlePresentModalPress();
-
     };
 
     const onSave = async () => {
@@ -91,7 +93,8 @@ function Chapters() {
         const data = {empresa: idEmpresa, capitulo: row?.id, porcentajes: percentageArr};
         try {
             await axios.post(url, data);
-            await dataStore.Chapters(userData);
+            const local = false;
+            await dataStore.Chapters(userData, local);
             bottomSheetModalRef.current?.dismiss();
             alerts('success', 'PORCENTAJES GUARDADOS', `Porcentajes guardados exitosamente!`, 2500);
             setLoading(false);

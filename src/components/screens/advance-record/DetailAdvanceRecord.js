@@ -1,19 +1,14 @@
-import React, {useContext, useState} from 'react';
-import {Dimensions, ScrollView, Text, TouchableOpacity, View} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
+import {Dimensions, ImageBackground, StyleSheet, Text, View} from 'react-native';
 import tw from 'twrnc';
 import {useNavigation} from '@react-navigation/native';
-import {mainColor, mainColor_, smoothColor, smoothColor_, textColor} from '../../../utils/Colors';
+import {mainColor, mainColor_} from '../../../utils/Colors';
 import {observer} from 'mobx-react-lite';
 import {StoreContext} from '../../../stores/Context';
 import Header from '../../../palette/Header';
-import {ProgressChart} from 'react-native-chart-kit';
-import IconANT from 'react-native-vector-icons/AntDesign';
-import IconFAW from 'react-native-vector-icons/FontAwesome';
-import IconMCI from 'react-native-vector-icons/MaterialCommunityIcons';
-import IconSLI from 'react-native-vector-icons/SimpleLineIcons';
-import CBList from '../../../palette/CBList';
-import IconButton from '../../../palette/IconButton';
-import ProgressModal from './ProgressModal';
+import bgImage from '../../../../assets/img/bgImage.jpg';
+import {Filters} from '../../../utils/HelpFunctions';
+import {runInAction} from 'mobx';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -23,19 +18,73 @@ const description = 'In publishing and graphic design, Lorem ipsum is a placehol
 function DetailAdvanceRecord() {
 
     const {dataStore} = useContext(StoreContext);
-    const {detailAdvanceRecord, theme} = dataStore;
-    const {project, batch, mz, OTCode, chapter, percentage} = detailAdvanceRecord;
+    const {
+        detailAdvanceRecord, chapterModel, chapters, models, percentageChapter, percentages, constructionStageChapter,
+    } = dataStore;
+    const {manzana, solar, modelo, tipoordentrabajo} = detailAdvanceRecord;
 
     const [switchIcon, setSwitchIcon] = useState(false);
     const [visibleModal, setVisibleModal] = useState(false);
     const [value, setValue] = useState(null);
+    const [chapterModel_, setChapterModel_] = useState(null);
+    const [chapters_, setChapter_] = useState(chapters);
+
+    const filterModel = Filters(models, 'descripcion', modelo);
+    const c = chapters && [...chapters];
+
+    /*PERCENTAGE PER CHAPTER*/
+    useEffect(() => {
+        const PercentageChapter = () => {
+            const filterChapterModel = Filters(chapterModel, 'id_modelo', filterModel[0].id);
+            const constructionStageChapterArr = [];
+
+            filterChapterModel.map(items => {
+                constructionStageChapter.map(csc => csc.id_capitulo === items.id_capitulo && constructionStageChapterArr.push(csc),
+                );
+            });
+
+            //console.log(constructionStageChapterArr);
+        };
+
+        constructionStageChapter && PercentageChapter();
+
+    }, [constructionStageChapter]);
+
+
+    /*CHAPTERS FOR MODELS*/
+    useEffect(() => {
+        const GetChaptersMode = async () => {
+
+            runInAction(() => {
+                c.forEach(item => item.check = false);
+                setChapter_(c);
+            });
+        };
+
+        (chapters && models) && GetChaptersMode();
+
+    }, [models, chapters]);
+
+    useEffect(() => {
+        if (chapterModel) {
+            const filterChapterModel = Filters(chapterModel, 'id_modelo', filterModel[0].id);
+            const chapters = [...chapters_];
+
+            chapters.forEach(items => {
+                filterChapterModel.forEach(cm => items.id === cm.id_capitulo && runInAction(() => items.check = true));
+            });
+
+            const filterChapter = Filters(chapters, 'check', true);
+            setChapterModel_(filterChapter);
+        }
+    }, [detailAdvanceRecord]);
 
     const data = {
         labels: ['Porcentaje'], // optional
         data: [0.4],
     };
 
-    const chartConfig = {
+    /*const chartConfig = {
         backgroundGradientFrom: !theme ? mainColor : mainColor_,
         backgroundGradientFromOpacity: 0,
         backgroundGradientTo: !theme ? mainColor : mainColor_,
@@ -44,24 +93,38 @@ function DetailAdvanceRecord() {
         strokeWidth: 2, // optional, default 3
         barPercentage: 0.5,
         useShadowColorFromDataset: false, // optional
-    };
+    };*/
 
-    const textColor_2 = !theme ? 'text-gray-400' : 'text-blue-600';
-    const textColor_4 = !theme ? 'text-lime-300' : 'text-orange-600 font-semibold';
-    const textBt = !theme ? 'text-slate-200' : 'text-slate-600';
-    const deleteIcon = <IconANT name="delete" size={20} color={theme ? 'red' : 'white'}/>;
-    const sendIcon = <IconFAW name="send-o" size={20} color={theme ? '#2085d8' : 'white'}/>;
-    const savedIcon_2 = <IconMCI name="content-save-all-outline" size={20} color={theme ? '#2e571d' : 'white'}/>;
-    const refreshIcon = <IconSLI name="refresh" size={28} color={!theme ? smoothColor : '#003d55'}/>;
 
     const navigation = useNavigation();
 
-    const onPressBack = () => {
-        navigation.navigate('AdvanceRecord');
-    };
+    const onPressBack = () => navigation.navigate('DetailListAdvanceRecord');
+
 
     return (
-        <ScrollView style={[tw`flex-1`, {backgroundColor: !theme ? mainColor : mainColor_}]}>
+        <View style={[tw`flex-1`]}>
+            <ImageBackground source={bgImage} resizeMode="stretch" style={tw`w-full h-full`}>
+                <Header text={'DETALLE DE'} text_2={`${modelo?.toUpperCase()}`} back onPressBack={onPressBack}/>
+                <View style={[tw`flex-1 p-3 mt-1`, styles.containerStyle]}>
+                    <View style={tw`mt-2`}>
+                        <Text style={tw`text-teal-900 font-bold shrink`}>{modelo}</Text>
+                        <Text style={tw`text-slate-600 text-xs shrink`}>{`Mz: ${manzana} - Solar: ${solar}`}</Text>
+                        <Text style={tw`text-orange-500 text-xs shrink`}>{`Tipo de trabajo: ${tipoordentrabajo}`}</Text>
+                        <Text style={tw`text-orange-600 text-xs shrink font-semibold`}>{`PORCENTAJE: 0%`}</Text>
+                    </View>
+
+                    {chapterModel_?.map(items => {
+                        const {descripcion} = items;
+                        return (
+                            <View style={tw`w-full border-b border-slate-300 py-2 justify-center`}>
+                                <Text style={tw`text-xs text-slate-700 font-semibold`}>{`${descripcion}`}</Text>
+                            </View>
+                        );
+                    })}
+                </View>
+            </ImageBackground>
+        </View>
+        /*<ScrollView style={[tw`flex-1`, {backgroundColor: !theme ? mainColor : mainColor_}]}>
             <Header back onPressBack={onPressBack}/>
             <View style={tw`p-3 flex-1`}>
                 <Text
@@ -124,8 +187,14 @@ function DetailAdvanceRecord() {
             <ProgressModal setVisibleModal={setVisibleModal} visibleModal={visibleModal} setValue={setValue}
                            setSwitchIcon={setSwitchIcon}/>
 
-        </ScrollView>
+        </ScrollView>*/
     );
 }
 
 export default observer(DetailAdvanceRecord);
+
+const styles = StyleSheet.create({
+    containerStyle: {
+        backgroundColor: 'rgba(0,0,0, 0.05)',
+    },
+});

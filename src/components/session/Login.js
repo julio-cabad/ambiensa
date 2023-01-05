@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Text, View, StyleSheet, Image, Keyboard, ImageBackground, StatusBar} from 'react-native';
 import tw from 'twrnc';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -15,48 +15,106 @@ import logoImg from '../../../assets/img/logoApp.png';
 import axios from 'axios';
 import {alerts, generalError} from '../../palette/Alerts';
 import {StoreContext} from '../../stores/Context';
+import {
+    deleteCredentials,
+    deleteUserData,
+    insertCredentials,
+    queryCredentials,
+    queryUserData,
+} from '../../database/Schemas';
+
+//import NetInfo from '@react-native-community/netinfo';
 
 function Login() {
 
-    const {dataStore} = useContext(StoreContext);
+    const {dataStore, offlineStore} = useContext(StoreContext);
+
 
     const [loading, setLoading] = useState(false);
 
     const navigation = useNavigation();
 
+    const LoginUrl = async (credentials, local) => {
+
+        await deleteCredentials();
+        const {user, pass} = credentials;
+        const insertCredentials_ = [user, pass];
+        await insertCredentials(insertCredentials_);
+
+        const res = await axios.post(LOGIN_URL, credentials);
+        const data = res.data[0];
+        if (data) {
+            const {nombreUsuario} = data;
+            dataStore.StatusLocal(local)
+            await dataStore.UserData(data, local);
+            alerts('success', 'BIENVENID@', `Bienvenid@ ${nombreUsuario}`, 2500);
+            navigation.navigate('Main');
+            await dataStore.Rol(data, local);
+            await dataStore.Percentages(data, local);
+            await dataStore.Chapters(data, local);
+            await dataStore.Models(data, local);
+            await dataStore.ConstructionStage(data, local);
+            await dataStore.GetProjects(data, local)
+            await dataStore.ReviewStates(data, local);
+            await dataStore.LevelRandomCharge(data, local);
+            await dataStore.InspectionPeriod(data, local);
+            //await dataStore.LoadImages(data)
+            /*
+             await dataStore.GetProjects(data);*/
+            //await dataStore.LoadImages(data);
+            // await dataStore.HousingEstates(data);
+            //await dataStore.WorkOrders(data, user);
+        } else {
+            alerts('error', 'AVISO', 'Usuario o contraseña incorrecta');
+            setLoading(false);
+        }
+
+    };
+
+    const LoginLocal = async (credentials, local) => {
+        const {user, pass} = credentials;
+        const queryCredentials_ = await queryCredentials();
+        const {pwd} = queryCredentials_[0];
+        if (queryCredentials_[0].user === user && pass === pwd) {
+            const data = await queryUserData();
+            const {nombreUsuario} = data[0];
+            dataStore.StatusLocal(local)
+            await dataStore.UserData(data[0], local);
+            navigation.navigate('Main');
+            alerts('success', 'BIENVENID@', `Bienvenid@ ${nombreUsuario}`, 2500);
+            await dataStore.Rol(data[0], local);
+            await dataStore.Percentages(data[0], local);
+            await dataStore.Chapters(data[0], local);
+            await dataStore.Models(data[0], local);
+            await dataStore.ConstructionStage(data[0], local);
+            await dataStore.GetProjects(data[0], local)
+            await dataStore.ReviewStates(data[0], local);
+            await dataStore.LevelRandomCharge(data[0], local);
+            await dataStore.InspectionPeriod(data[0], local);
+        } else {
+            alerts('error', 'AVISO', 'Usuario o contraseña incorrecta');
+            setLoading(false);
+        }
+    };
+
+
     const onSubmit = async (values) => {
         Keyboard.dismiss();
         const credentials = {user: values.email.trim(), pass: values.password.trim()};
         setLoading(true);
+
         try {
-            const res = await axios.post(LOGIN_URL, credentials);
-            const data = res.data[0];
-            if (data) {
-                const {nombreUsuario} = data;
-                dataStore.UserData(data);
-                alerts('success', 'BIENVENID@', `Bienvenid@ ${nombreUsuario}`, 2500);
-                navigation.navigate('Main');
-                await dataStore.Rol(data);
-                await dataStore.Chapters(data);
-                await dataStore.Percentages(data);
-                await dataStore.ConstructionStage(data);
-                await dataStore.ReviewStates(data);
-                await dataStore.LevelRandomCharge(data);
-            } else {
-                alerts('error', 'AVISO', 'Usuario o contraseña incorrecta');
-                setLoading(false);
-            }
+            await deleteUserData();
+            const queryUserData_ = await queryUserData();
+            const local = queryUserData_.length > 0;
+            queryUserData_.length === 0 ? await LoginUrl(credentials, local) : await LoginLocal(credentials, local);
             setLoading(false);
         } catch (e) {
-
-            console.log(e);
             generalError();
             setLoading(false);
         }
-
-        //setLoading(true);
-        //navigation.navigate('Main');
     };
+
 
     return (
         <View style={[tw`flex-1`]}>

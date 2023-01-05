@@ -18,7 +18,7 @@ import bgImage from '../../../../../assets/img/bgImage.jpg';
 import {FlashList} from '@shopify/flash-list';
 import Loading from '../../../../palette/Loading';
 import NoData from '../../../../palette/NoData';
-import {deleteIcon_, editIcon, reviewStatesImg, saveBottomModalIcon, uploadRandomImg} from '../../../../utils/Icons';
+import {editIcon, saveBottomModalIcon, uploadRandomImg} from '../../../../utils/Icons';
 import IconButton from '../../../../palette/IconButton';
 import {BottomSheetModal, BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import axios from 'axios';
@@ -38,7 +38,6 @@ function LevelRandomCharge() {
     const bottomSheetModalRef = useRef(null);
     const snapPoints = useMemo(() => ['25%', '83%'], []);
 
-
     useEffect(() => {
         const GetData = () => {
 
@@ -55,6 +54,7 @@ function LevelRandomCharge() {
                 });
             });
 
+
             levelRandomChargeArr.forEach(items => {
                 const {id_estadorevision} = items;
                 reviewStates.forEach(r => {
@@ -64,6 +64,7 @@ function LevelRandomCharge() {
                     }
                 });
             });
+
             setLevelRandomCharge_(levelRandomChargeArr_);
         };
 
@@ -93,6 +94,36 @@ function LevelRandomCharge() {
         handlePresentModalPress();
     };
 
+
+    const onSave = async () => {
+
+        const {id_rol, id_estadorevision} = row;
+        Keyboard.dismiss();
+
+        const url = MAIN_URL + '/nivelcargaaleatoria';
+        const porcentaje = parseFloat(addValue) / 100;
+        const nivelesCarga = [{rol: id_rol, estadorevision: id_estadorevision, porcentaje}];
+        const data = {empresa: idEmpresa, nivelesCarga};
+
+        setLoading(true);
+
+        try {
+            await axios.post(url, data);
+            await dataStore.LevelRandomCharge(userData, false);
+            setTimeout(() => {
+                bottomSheetModalRef.current?.dismiss();
+                alerts('success', 'NIVELES ACTUALIZADOS', `Niveles actualizados exitosamente!`, 2500);
+                setLoading(false);
+            }, 1000);
+        } catch (e) {
+            setAddValue('');
+            bottomSheetModalRef.current?.dismiss();
+            generalError();
+            setLoading(false);
+        }
+
+    };
+
     const renderItem = ({item}) => {
         const {rol, reviewState} = item;
 
@@ -111,36 +142,6 @@ function LevelRandomCharge() {
                 </View>
             </View>
         );
-
-    };
-
-    const onSave = async () => {
-
-        const {id_rol, id_estadorevision} = row;
-        Keyboard.dismiss();
-
-        const url = MAIN_URL + '/nivelcargaaleatoria';
-        const porcentaje = parseFloat(addValue) / 100;
-        const nivelesCarga = [{rol: id_rol, estadorevision: id_estadorevision, porcentaje}];
-        const data = {empresa: idEmpresa, nivelesCarga};
-
-        setLoading(true);
-
-        try {
-            await axios.post(url, data);
-            await dataStore.LevelRandomCharge(userData);
-            setTimeout(() => {
-                bottomSheetModalRef.current?.dismiss();
-                alerts('success', 'NIVELES ACTUALIZADOS', `Niveles actualizados exitosamente!`, 2500);
-                setLoading(false);
-            }, 1000);
-        } catch (e) {
-            console.log(e);
-            setAddValue('');
-            bottomSheetModalRef.current?.dismiss();
-            generalError();
-            setLoading(false);
-        }
 
     };
 

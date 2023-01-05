@@ -16,6 +16,10 @@ import EquivalencePercentageChapter
     from '../screens/setting/equivalence-percentage-chapter/EquivalencePercentageChapter';
 import ReviewStates from '../screens/setting/review-states/ReviewStates';
 import LevelRandomCharge from '../screens/setting/level-random-charge/LevelRandomCharge';
+import InspectionPeriod from '../screens/setting/inspection-period/InspectionPeriod';
+import LoadImages from '../screens/setting/load-images/LoadImages';
+import DetailWorkOrders from '../screens/download-work-orders/DetailWorkOrders';
+import DetailListAdvanceRecord from '../screens/advance-record/DetailListAdvanceRecord';
 
 const Stack = createStackNavigator();
 
@@ -65,9 +69,13 @@ function NavigationApp() {
                     <Stack.Screen name="EquivalencePercentageChapter" component={EquivalencePercentageChapter} options={options}/>
                     <Stack.Screen name="ReviewStates" component={ReviewStates} options={options}/>
                     <Stack.Screen name="LevelRandomCharge" component={LevelRandomCharge} options={options}/>
+                    <Stack.Screen name="InspectionPeriod" component={InspectionPeriod} options={options}/>
+                    <Stack.Screen name="LoadImages" component={LoadImages} options={options}/>
                     <Stack.Screen name="Home" component={Home} options={options}/>
                     <Stack.Screen name="DownloadWorkOrders" component={DownloadWorkOrders} options={options}/>
+                    <Stack.Screen name="DetailWorkOrders" component={DetailWorkOrders} options={options}/>
                     <Stack.Screen name="AdvanceRecord" component={AdvanceRecord} options={options}/>
+                    <Stack.Screen name="DetailListAdvanceRecord" component={DetailListAdvanceRecord} options={options}/>
                     <Stack.Screen name="DetailAdvanceRecord" component={DetailAdvanceRecord} options={options}/>
                     <Stack.Screen name="ProgressControl" component={ProgressControl} options={options}/>
                 </Stack.Navigator>

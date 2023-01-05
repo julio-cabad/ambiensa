@@ -12,7 +12,7 @@ import {observer} from 'mobx-react-lite';
 function FilterHeader(props) {
 
     const {dataStore} = useContext(StoreContext);
-    const {theme} = dataStore;
+
 
     const {onPressBack, onFilter, filterValue, setFilterValue, setData, data } = props;
 
@@ -22,19 +22,17 @@ function FilterHeader(props) {
         setData(data)
     }
 
-    const arrowBackIcon = <IconFAW5 name="arrow-left" size={28} color={!theme ? smoothColor : smoothColor_}/>;
-    const viewColor = !theme ? 'bg-gray-800' : 'bg-gray-200';
-    const inputColor = !theme ? 'bg-gray-600' : 'bg-blue-50';
+    const arrowBackIcon = <IconFAW5 name="arrow-left" size={28} color={'gray'}/>;
+
 
     return (
-        <View style={[tw`w-full flex-row  items-center justify-around  h-16 px-2 ${viewColor}`]}>
-            <IconButton icon={arrowBackIcon} onPress={onPressBack}/>
-            <View style={[tw`${inputColor}`, styles.sectionStyle]}>
+        <View style={[tw`w-full flex-row  items-center justify-around  h-16 px-2`]}>
+            <View style={[tw`border border-teal-400`, styles.sectionStyle]}>
                 <TextInput
-                    style={{flex: 1, paddingHorizontal: 3, height: 45, fontSize: 18}}
+                    style={{flex: 1, paddingHorizontal: 3, height: 40, fontSize: 18}}
                     placeholder={'Buscar...'}
                     underlineColorAndroid="transparent"
-                    color={!theme ? colorInputText: textSideColor_}
+                    color={'#333'}
                     placeholderTextColor={'gray'}
                     textAlignVertical="top"
                     value={filterValue}
@@ -45,9 +43,6 @@ function FilterHeader(props) {
                         {closeIcon}
                     </TouchableOpacity>
 
-            </View>
-            <View style={{width: 50, height: 50, borderRadius: 25}}>
-                {avatarImg}
             </View>
         </View>
     );
@@ -75,6 +70,6 @@ const styles = StyleSheet.create({
         //backgroundColor: editBg,
         paddingHorizontal: 5,
         borderRadius: 7,
-        width: '65%',
+        width: '100%',
     },
 });

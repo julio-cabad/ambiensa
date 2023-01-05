@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 import {createContext} from 'react';
 
 const StoreContext = createContext({
-  //  bookingStore: undefined,
+    offlineStore: null,
     dataStore: null,
 });
 

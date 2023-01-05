@@ -1,50 +1,48 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {Keyboard, Text, View} from 'react-native';
+import React, {useCallback, useContext, useEffect, useRef, useState} from 'react';
+import {ImageBackground, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import tw from 'twrnc';
 import {useNavigation} from '@react-navigation/native';
-import {mainColor, mainColor_, smoothColor, textColor} from '../../../utils/Colors';
-import FilterHeader from '../../../palette/FilterHeader';
 import {FlashList} from '@shopify/flash-list';
-import {downloadImg, workOrderImg} from '../../../utils/Icons';
-import BouncyCheckbox from 'react-native-bouncy-checkbox';
-import {Filters, UpdateArray} from '../../../utils/HelpFunctions';
+import {arrowRIcon, downloadImg, workOrderImg} from '../../../utils/Icons';
+import {Filters} from '../../../utils/HelpFunctions';
 import {FloatingAction} from 'react-native-floating-action';
-import NoFound from '../../../palette/NoFound';
 import {StoreContext} from '../../../stores/Context';
 import {observer} from 'mobx-react-lite';
-
-const data_ = [
-    {project: 'Proyecto 1', urbanization: '1', constructionStage: 'Etapa1', OTCode: 401, selected: false},
-    {project: 'Proyecto 2', urbanization: '2', constructionStage: 'Etapa2', OTCode: 402, selected: false},
-    {project: 'Proyecto 2', urbanization: '3', constructionStage: 'Etapa3', OTCode: 403, selected: false},
-    {project: 'Proyecto 5', urbanization: '4', constructionStage: 'Etapa4', OTCode: 404, selected: false},
-];
+import bgImage from '../../../../assets/img/bgImage.jpg';
+import Header from '../../../palette/Header';
+import Loading from '../../../palette/Loading';
+import NoData from '../../../palette/NoData';
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
+import ConfirmationModal from '../../../palette/ConfirmationModal';
+import {
+    deleteDetailsWorkOrders, deleteWorkOrders, queryDetailsWorkOrders, queryWorkOrders,
+} from '../../../database/Schemas';
+import {alerts, generalError} from '../../../palette/Alerts';
 
 const actions = [
     {
-        text: 'Descargar', icon: downloadImg, name: 'bt_download', position: 1, color: 'white',
+        text: 'Descargar Ord. de Trabajo', icon: downloadImg, name: 'bt_download', position: 1, color: 'white',
     },
 ];
 
 function DownloadWorkOrders() {
 
     const {dataStore} = useContext(StoreContext);
-    const {theme} = dataStore;
+    const {workOrders, detailWorkOrders, userData, netInfo} = dataStore;
 
-    const [filterValue, setFilterValue] = useState('');
-    const [data, setData] = useState(data_);
-    const [selectAll, setSelectAll] = useState(false);
-    const [downloadBt, setDownloadBt] = useState(false);
-
-    const listColor = !theme ? 'bg-gray-800' : 'bg-blue-50';
-    const textColor_1 = !theme ? 'text-slate-100' : 'text-blue-900 font-semibold';
-    const textColor_2 = !theme ? 'text-gray-400' : 'text-blue-400';
-    const textColor_3 = !theme ? 'text-gray-300' : 'text-blue-600';
+    const [loading, setLoading] = useState(false);
+    const bottomSheetModalRef = useRef(null);
 
     useEffect(() => {
-        const selected = Filters(data, 'selected', true);
-        setDownloadBt(selected.length > 0);
-    }, [data]);
+        const WorkOrder = async () => {
+            setLoading(true);
+            const workOrders_ = await queryWorkOrders();
+            const detailWorkOrders_ = await queryDetailsWorkOrders();
+            dataStore.WokOrdersDb(workOrders_, detailWorkOrders_);
+            setLoading(false);
+        };
+        WorkOrder().catch(() => null);
+    }, []);
 
     const navigation = useNavigation();
 
@@ -52,7 +50,7 @@ function DownloadWorkOrders() {
         navigation.navigate('Main');
     };
 
-    const onFilter = (text) => {
+    /*const onFilter = (text) => {
         setFilterValue(text);
         let search = new RegExp(text, 'i');
 
@@ -86,94 +84,98 @@ function DownloadWorkOrders() {
         const {OTCode, selected} = item;
         const updateData = UpdateArray(data, 'OTCode', OTCode, 'selected', !selected);
         setData(updateData);
+    };*/
+
+    const handlePresentModalPress = useCallback(() => {
+        bottomSheetModalRef.current?.present();
+    }, []);
+
+    const onDownLoadWorkOrder = async () => {
+
+        setLoading(true);
+
+        try {
+            await deleteWorkOrders();
+            await deleteDetailsWorkOrders();
+            const user = 'jabad';
+            await dataStore.WorkOrders(userData, user);
+            bottomSheetModalRef.current?.dismiss();
+            alerts('success', 'ORDENES DESCARGADAS', `Ordenes descargadas exitosamente!`, 2500);
+            setLoading(false);
+        } catch (e) {
+            setLoading(false);
+            generalError();
+        }
     };
 
-
-    const onFloatAction = (name) => {
+    const onDetail = (item) => {
+        const {uid} = item;
+        const detailsWorkOrders_ = Filters(detailWorkOrders, 'uid', uid);
+        dataStore.DetailWorkOrders(detailsWorkOrders_);
+        navigation.navigate('DetailWorkOrders');
     };
 
     const renderItem = ({item}) => {
-        const {project, urbanization, constructionStage, OTCode, selected} = item;
+        const {proyecto, urbanizacion, etapa, tiempoejecucion, codigo} = item;
 
         return (
-            <View style={tw`w-full p-2 flex-row items-center justify-between ${listColor} rounded mt-3`}>
-                <View style={tw`flex-row items-center`}>
+            <TouchableOpacity onPress={() => onDetail(item)}
+                              style={[tw`w-full p-2 flex-row items-center justify-between border-b border-gray-400`, styles.containerStyle]}>
+                <View style={[tw`flex-row items-center`, {width: '85%'}]}>
                     {workOrderImg}
                     <View style={tw`ml-2`}>
-                        {!selectAll &&
-                        <BouncyCheckbox
-                            size={25}
-                            fillColor={!selected ? 'gray' : !theme ? smoothColor : 'tomato'}
-                            iconStyle={{borderColor: !theme ? smoothColor : mainColor}}
-                            isChecked={selected}
-                            onPress={() => {
-                                onHandleSelected(item);
-                            }}
-                        />}
-
-                        {selectAll &&
-                        <BouncyCheckbox
-                            size={25}
-                            fillColor={smoothColor}
-                            iconStyle={{borderColor: smoothColor}}
-                            isChecked={true}
-                        />}
-                    </View>
-
-                    <View>
-                        <Text style={tw`${textColor_1} text-base font-semibold`}>{`${project}`}</Text>
-                        <Text style={tw`${textColor_2} text-xs `}>{`Urbanización : ${urbanization}`}</Text>
-                        <Text style={tw`${textColor_3} text-xs `}>{`Etapa construcción : ${constructionStage}`}</Text>
-                        <Text style={tw`${textColor_3} text-xs`}>{`Código O.T : ${OTCode}`}</Text>
+                        <Text style={tw`text-teal-900 font-bold text-xs shrink`}>{proyecto}</Text>
+                        <Text style={tw`text-slate-500 text-xs shrink`}>{codigo}</Text>
+                        <Text
+                            style={tw`text-slate-600 text-xs shrink`}>{`Urb. ${urbanizacion} - Etapa. ${etapa}`}</Text>
+                        <Text style={tw`text-orange-400 text-xs shrink`}>{`T. ejec. ${tiempoejecucion}`}</Text>
                     </View>
                 </View>
-            </View>
+                <View style={[tw`flex-row justify-end`, {width: '15%'}]}>
+                    {arrowRIcon}
+                </View>
+            </TouchableOpacity>
         );
     };
 
     return (
-        <View style={[tw`flex-1`, {backgroundColor: !theme ? mainColor : mainColor_}]}>
-            <FilterHeader onPressBack={onPressBack} filterValue={filterValue} onFilter={onFilter}
-                          setFilterValue={setFilterValue} setData={setData} data={data_}/>
-            {data.length > 0 &&
-            <View style={tw`p-3 flex-1`}>
-                <Text
-                    style={[tw`mb-1 font-bold`, {color: !theme ? smoothColor : textColor}]}>
-                     {'DESCARGA DE ÓRDENES DE TRABAJO'}</Text>
+        <BottomSheetModalProvider>
+            <View style={[tw`flex-1`]}>
+                <ImageBackground source={bgImage} resizeMode="stretch" style={tw`w-full h-full`}>
+                    <Header text={'ORDENES DE TRABAJO'} back onPressBack={onPressBack}/>
+                    {workOrders?.length > 0 &&
+                    <View style={tw`flex-1 p-3`}>
+                        <FlashList
+                            data={workOrders}
+                            renderItem={renderItem}
+                            estimatedItemSize={200}
+                        />
 
-                <View style={tw`w-full items-center flex-row mt-2`}>
+                    </View>}
+                    {(!workOrders && loading) && <Loading/>}
+                    {workOrders?.length === 0 && <NoData/>}
+                </ImageBackground>
 
-                    <BouncyCheckbox
-                        size={25}
-                        fillColor={!selectAll ? 'gray' : !theme ? smoothColor : 'tomato'}
-                        iconStyle={{borderColor: !theme ? smoothColor : mainColor}}
-                        isChecked={selectAll}
-                        onPress={() => onHandleSelectAll()}
-                        disabled={data.length === 0}
-                        style={{marginLeft: 57}}
-                    />
-                    <Text
-                        style={[tw`mb-1 `,{color: !theme ? smoothColor : textColor}]}>{'Seleccionar todo'}</Text>
-
-                </View>
-
-                <FlashList
-                    data={data}
-                    renderItem={renderItem}
-                    estimatedItemSize={200}
+                <FloatingAction
+                    actions={actions}
+                    color={'#007b8e'}
+                    onPressItem={() => handlePresentModalPress()}
                 />
-            </View>}
+            </View>
 
-            {data.length === 0 && <NoFound text_1={'No existen datos'}/>}
+            <ConfirmationModal bottomSheetModalRef={bottomSheetModalRef} head={'DESCARGAR ORDENES DE TRABAJO'}
+                               text={'Esta seguro que desea descargar las ordenes de trabajo?'}
+                               loading={loading} onPress={onDownLoadWorkOrder} textButton={'Descargar'}
+            />
 
-            {downloadBt &&
-            <FloatingAction
-                actions={actions}
-                color={'#1f2937'}
-                onPressItem={(name) => onFloatAction(name)}
-            />}
-        </View>
+        </BottomSheetModalProvider>
     );
 }
 
 export default observer(DownloadWorkOrders);
+
+const styles = StyleSheet.create({
+    containerStyle: {
+        backgroundColor: 'rgba(0,0,0, 0.05)',
+    },
+});

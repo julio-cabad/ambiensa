@@ -171,6 +171,7 @@ function EquivalencePercentageChapter() {
 
         try {
             await axios.post(url, data);
+            await dataStore.ConstructionStageChapter(chapters, percentageChapter, percentages, false, idEmpresa);
             setTrigger(!trigger);
             setTimeout(() => {
                 bottomSheetModalRef.current?.dismiss();
@@ -178,7 +179,6 @@ function EquivalencePercentageChapter() {
                 setLoading(false);
             }, 1000);
         } catch (e) {
-            console.log(e);
             bottomSheetModalRef.current?.dismiss();
             generalError();
             setLoading(false);

@@ -38,6 +38,7 @@ export const userIcon = <IconANT name="user" size={24} color={'#333'}/>;
 export const emailIcon = <IconFTO name="email" size={24} color={iconsColor}/>;
 export const emailIcon_2 = <IconFTO name="email" size={20} color={'#fff'}/>;
 export const celIcon = <IconION name="ios-phone-portrait-outline" size={24} color={'#333'}/>;
+export const playIcon = <IconION name="play" size={20} color={'#333'}/>;
 export const hidePwdIcon = <IconION name="eye-off-outline" size={24} color={iconsColor}/>;
 export const showPwdIcon = <IconION name="eye-outline" size={24} color={iconsColor}/>;
 export const imagesIcon = <IconION name="ios-images-outline" size={40} color={smoothColor}/>;
@@ -106,6 +107,9 @@ import chapter from '../../assets/img/chapter.png';
 import reviewStates from '../../assets/img/reviewStates.png';
 import add from '../../assets/img/add.png';
 import uploadRandom from '../../assets/img/uploadRandom.png';
+import period from '../../assets/img/period.png';
+import upload from '../../assets/img/uploadImg.png';
+import detailWorkOrders from '../../assets/img/detailWorkOrders.png';
 
 export const avatarImg = <Image source={avatar} style={{width: 50, height: 50}}/>;
 export const logoAppImg_ = <Image source={logoApp} style={{width: 50, height: 50}}/>;
@@ -122,3 +126,6 @@ export const chapterImg = <Image source={chapter} style={{width: 37, height: 37}
 export const rightArrowImg = <Image source={rightArrow} style={{width: 40, height: 40}}/>;
 export const reviewStatesImg = <Image source={reviewStates} style={{width: 38, height: 38}}/>;
 export const uploadRandomImg = <Image source={uploadRandom} style={{width: 38, height: 38}}/>;
+export const periodImg = <Image source={period} style={{width: 38, height: 38}}/>;
+export const uploadImg = <Image source={upload} style={{width: 38, height: 38}}/>;
+export const detailWorkOrdersImg = <Image source={detailWorkOrders} style={{width: 40, height: 40}}/>;

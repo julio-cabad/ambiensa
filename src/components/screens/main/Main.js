@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {Text, TouchableOpacity, View, StatusBar, ImageBackground, StyleSheet, Dimensions} from 'react-native';
 import tw from 'twrnc';
 import {useNavigation} from '@react-navigation/native';
@@ -11,6 +11,9 @@ import {
     calendarIcon, downloadIcon, imageIcon, logoutImg, registerIcon, settingsIcon,
 } from '../../../utils/Icons';
 import {FloatingAction} from 'react-native-floating-action';
+import {Filters, generateUUID, Order} from '../../../utils/HelpFunctions';
+import {MAIN_URL} from '../../../utils/Const';
+import axios from 'axios';
 
 const windowWidth = Dimensions.get('window').width;
 const colorBt = '#120F72';
@@ -25,13 +28,30 @@ const actions = [
 function Main() {
 
     const {dataStore} = useContext(StoreContext);
-    const {userData} = dataStore;
+    const {userData, getProjects, percentageChapter, chapters, percentages, local} = dataStore;
+    const {idEmpresa} = userData;
 
     const navigation = useNavigation();
 
+    useEffect(() => {
+        const ProjectStages = async () => {
+            await dataStore.ProjectStages(userData, getProjects, local);
+        };
+
+        getProjects && ProjectStages();
+    }, [getProjects]);
+
+    useEffect(() => {
+        const ConstructionStageChapter = async () => {
+            await dataStore.ConstructionStageChapter(chapters, percentageChapter, percentages, local, idEmpresa);
+        };
+
+        (chapters && percentageChapter && percentages) && ConstructionStageChapter();
+
+    }, [chapters, percentageChapter, percentages]);
+
     const Settings = async () => {
         navigation.navigate('Settings');
-        await dataStore.Models(userData)
     };
 
     const DownloadWorkOrders = () => {
@@ -46,7 +66,7 @@ function Main() {
         navigation.navigate('ProgressControl');
     };
 
-    const Logout = (name) => {
+    const Logout = () => {
         navigation.navigate('Login');
     };
 
