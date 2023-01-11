@@ -5,7 +5,7 @@ import {Filters, generateUUID} from '../utils/HelpFunctions';
 import {insertDetailsWorkOrders, insertWorkOrders, queryDetailsWorkOrders, queryWorkOrders} from '../database/Schemas';
 
 class OfflineStore {
-    userData = null;
+    saveWorkOrder = {};
 
 
     constructor() {
@@ -13,8 +13,8 @@ class OfflineStore {
     }
 
     /*USER DATA*/
-    UserData = (userData) => {
-        this.userData = userData;
+    SaveWorkOrder = (values) => {
+        this.saveWorkOrder = values;
     };
 
 

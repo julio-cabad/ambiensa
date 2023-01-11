@@ -14,6 +14,7 @@ import {FloatingAction} from 'react-native-floating-action';
 import {Filters, generateUUID, Order} from '../../../utils/HelpFunctions';
 import {MAIN_URL} from '../../../utils/Const';
 import axios from 'axios';
+import {queryDetailsWorkOrders, queryWorkOrders} from '../../../database/Schemas';
 
 const windowWidth = Dimensions.get('window').width;
 const colorBt = '#120F72';
@@ -34,10 +35,7 @@ function Main() {
     const navigation = useNavigation();
 
     useEffect(() => {
-        const ProjectStages = async () => {
-            await dataStore.ProjectStages(userData, getProjects, local);
-        };
-
+        const ProjectStages = async () => await dataStore.ProjectStages(userData, getProjects, local);
         getProjects && ProjectStages();
     }, [getProjects]);
 
@@ -58,8 +56,11 @@ function Main() {
         navigation.navigate('DownloadWorkOrders');
     };
 
-    const AdvanceRecord = () => {
+    const AdvanceRecord = async () => {
         navigation.navigate('AdvanceRecord');
+        const workOrders_ = await queryWorkOrders();
+        const detailWorkOrders_ = await queryDetailsWorkOrders();
+        dataStore.WokOrdersDb(workOrders_, detailWorkOrders_);
     };
 
     const ProgressControl = () => {

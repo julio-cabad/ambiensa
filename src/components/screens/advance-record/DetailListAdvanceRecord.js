@@ -8,52 +8,53 @@ import Header from '../../../palette/Header';
 import bgImage from '../../../../assets/img/bgImage.jpg';
 import {arrowRIcon, detailWorkOrdersImg} from '../../../utils/Icons';
 import {FlashList} from '@shopify/flash-list';
-import {Filters} from '../../../utils/HelpFunctions';
-import {runInAction} from 'mobx';
 
 function DetailListAdvanceRecord() {
 
-    const {dataStore} = useContext(StoreContext);
-    const {detailWorkOrders_} = dataStore
+    const {dataStore, offlineStore} = useContext(StoreContext);
+    const {detailWorkOrders_} = dataStore;
+    const {saveWorkOrder} = offlineStore;
 
-   /* const [chapterModel_, setChapterModel] = useState(chapterModel);
-    const [chapters_, setChapter_] = useState(chapters);
+    /* const [chapterModel_, setChapterModel] = useState(chapterModel);
+     const [chapters_, setChapter_] = useState(chapters);
 
-    const c = chapters && [...chapters];
+     const c = chapters && [...chapters];
 
-    useEffect(() => {
-        const GetChaptersMode = async () => {
-            setChapterModel(chapterModel);
+     useEffect(() => {
+         const GetChaptersMode = async () => {
+             setChapterModel(chapterModel);
 
-            runInAction(() => {
-                c.forEach(item => item.check = false);
-                setChapter_(c);
-            });
-        };
+             runInAction(() => {
+                 c.forEach(item => item.check = false);
+                 setChapter_(c);
+             });
+         };
 
-        (chapters && models) && GetChaptersMode();
+         (chapters && models) && GetChaptersMode();
 
-    }, [models, chapters]);
+     }, [models, chapters]);
 
-    useEffect(() => {
-        /!*if (chapterModel_) {
-            const filterChapterModel = Filters(chapterModel_, 'id_modelo', row?.id);
-            const chapters = [...chapters_];
+     useEffect(() => {
+         /!*if (chapterModel_) {
+             const filterChapterModel = Filters(chapterModel_, 'id_modelo', row?.id);
+             const chapters = [...chapters_];
 
-            console.log(filterChapterModel);
+             console.log(filterChapterModel);
 
-        }*!/
-    }, [chapterModel_]);*/
-
+         }*!/
+     }, [chapterModel_]);*/
 
     const navigation = useNavigation();
 
     const onPressBack = () => navigation.navigate('AdvanceRecord');
 
     const DetailAdvanceRecord = (item) => {
+        const {id_detalle, manzana, solar, modelo, tipoordentrabajo} = item;
         dataStore.DetailAdvanceRecord(item);
+        offlineStore.SaveWorkOrder({...saveWorkOrder, id_detalle, manzana, solar, modelo, tipoordentrabajo});
         navigation.navigate('DetailAdvanceRecord');
     };
+
 
     const renderItem = ({item}) => {
 

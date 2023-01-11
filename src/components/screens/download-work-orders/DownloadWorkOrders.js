@@ -164,7 +164,9 @@ function DownloadWorkOrders() {
             </View>
 
             <ConfirmationModal bottomSheetModalRef={bottomSheetModalRef} head={'DESCARGAR ORDENES DE TRABAJO'}
-                               text={'Esta seguro que desea descargar las ordenes de trabajo?'}
+                               text={'* Esta seguro que desea descargar las ordenes de trabajo?' + '\n'
+                               + '* Sus avances previos ya han sido enviados?' + '\n' +
+                               '* Recuerde que su información es actualizada al descargar las nuevas ordenes de trabajo.'}
                                loading={loading} onPress={onDownLoadWorkOrder} textButton={'Descargar'}
             />
 

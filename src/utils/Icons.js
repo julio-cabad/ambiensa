@@ -52,6 +52,7 @@ export const checkIcon = <IconION name="checkmark-circle-sharp" size={42} color=
 export const checkModalIcon = <IconION name="checkmark-circle-sharp" size={24} color={'white'}/>;
 export const cancelIcon = <IconMI name="cancel" size={40} color={'red'}/>;
 export const cancelModalIcon = <IconMI name="cancel" size={24} color={'red'}/>;
+export const homeIcon_ = <IconMI name="home" size={28} color={'white'}/>;
 export const errorIcon = <IconMI name="error" size={24} color={'red'}/>;
 export const arrowRIcon = <IconMI name="arrow-forward-ios" size={32} color={'#c0c4c1'}/>;
 export const arrowRIcon_ = <IconMI name="arrow-forward-ios" size={24} color={'#333'}/>;
@@ -70,6 +71,8 @@ export const savedIcon = <IconMCI name="content-save-all-outline" size={28} colo
 export const saveBottomModalIcon = <IconMCI name="content-save-all-outline" size={20} color={'#333'}/>;
 export const refreshModalIcon = <IconMCI name="refresh" size={20} color={'#333'}/>;
 export const deleteModalIcon = <IconMCI name="delete-outline" size={20} color={'#333'}/>;
+export const filePercentIcon = <IconMCI name="file-percent-outline" size={20} color={'#120F72'}/>;
+export const saveIcon_ = <IconMCI name="content-save-edit-outline" size={24} color={'#120F72'}/>;
 export const savedIcon_2 = <IconMCI name="content-save-all-outline" size={24} color={'teal'}/>;
 export const guestsIcon = <IconION name="person-add-outline" size={28} color={'white'}/>;
 export const imageIcon = <IconION name="ios-images-outline" size={56} color={'white'}/>;
@@ -110,6 +113,8 @@ import uploadRandom from '../../assets/img/uploadRandom.png';
 import period from '../../assets/img/period.png';
 import upload from '../../assets/img/uploadImg.png';
 import detailWorkOrders from '../../assets/img/detailWorkOrders.png';
+import save from '../../assets/img/save.png';
+import delete_ from '../../assets/img/delete-file.png';
 
 export const avatarImg = <Image source={avatar} style={{width: 50, height: 50}}/>;
 export const logoAppImg_ = <Image source={logoApp} style={{width: 50, height: 50}}/>;
@@ -117,6 +122,8 @@ export const logoAppImg = <Image source={logoApp} style={{width: 50, height: 50}
 export const workOrderImg = <Image source={workOrder} style={{width: 40, height: 40}}/>;
 export const advancedImg = <Image source={advanced} style={{width: 40, height: 40}}/>;
 export const downloadImg = <Image source={download} style={{width: 25, height: 25}}/>;
+export const savedImg = <Image source={save} style={{width: 25, height: 25}}/>;
+export const delete_Img = <Image source={delete_} style={{width: 25, height: 25}}/>;
 export const settingsImg = <Image source={settings} style={{width: 30, height: 30}}/>;
 export const logoutImg = <Image source={logout} style={{width: 39, height: 39}}/>;
 export const addImg = <Image source={add} style={{width: 39, height: 39}}/>;

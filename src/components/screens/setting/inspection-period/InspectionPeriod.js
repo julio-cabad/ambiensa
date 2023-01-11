@@ -24,7 +24,6 @@ import NoData from '../../../../palette/NoData';
 import {MAIN_URL} from '../../../../utils/Const';
 import {alerts, generalError} from '../../../../palette/Alerts';
 import axios from 'axios';
-import {duplicateArrayObjects} from '../../../../utils/HelpFunctions';
 
 function InspectionPeriod() {
 
@@ -55,6 +54,8 @@ function InspectionPeriod() {
                 });
             });
 
+            console.log(mapData, '-----')
+
             inspectionPeriod.forEach(items => {
                 const {id_proyecto, id_etapaproyecto, periodo} = items;
                 mapData.forEach(md => {
@@ -77,7 +78,6 @@ function InspectionPeriod() {
         (projectStages && getProjects && inspectionPeriod) && GetData();
 
     }, [projectStages, getProjects, inspectionPeriod]);
-
 
     const navigation = useNavigation();
 

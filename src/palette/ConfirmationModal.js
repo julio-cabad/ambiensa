@@ -19,7 +19,6 @@ function ConfirmationModal(props) {
     }, []);
 
 
-
     return (
         <BottomSheetModal ref={bottomSheetModalRef} index={1} snapPoints={snapPoints} onChange={handleSheetChanges}>
             <View style={tw`p-2`}>

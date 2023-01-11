@@ -55,7 +55,7 @@ function ChaptersModel() {
     useEffect(() => {
         if (chapterModel_ && row) {
             const filterChapterModel = Filters(chapterModel_, 'id_modelo', row?.id);
-            const chapters = [...chapters_];
+            const chapters = [...c];
 
             chapters.forEach(items => {
                 const {id} = items;
@@ -80,6 +80,12 @@ function ChaptersModel() {
 
     const handleSheetChanges = useCallback((index: number) => {
         index === -1 && setRow(null);
+        if (index === -1) {
+            runInAction(() => {
+                c.forEach(item => item.check = false);
+                setChapter_(c);
+            });
+        }
     }, []);
 
     const onPressBack = () => navigation.navigate('Settings');

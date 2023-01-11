@@ -3,25 +3,42 @@ import {ImageBackground, Keyboard, StyleSheet, Text, TouchableOpacity, View} fro
 import tw from 'twrnc';
 import {useNavigation} from '@react-navigation/native';
 import {FlashList} from '@shopify/flash-list';
-import {arrowRIcon, workOrderImg} from '../../../utils/Icons';
+import {arrowRIcon, delete_Img, logoutImg, savedImg, workOrderImg} from '../../../utils/Icons';
 import {StoreContext} from '../../../stores/Context';
 import {observer} from 'mobx-react-lite';
 import bgImage from '../../../../assets/img/bgImage.jpg';
 import Header from '../../../palette/Header';
 import NoData from '../../../palette/NoData';
 import {Filters} from '../../../utils/HelpFunctions';
+import {FloatingAction} from 'react-native-floating-action';
+import {OfflineStore} from '../../../stores/OfflineStore';
 
+
+const actions = [
+    {
+        text: 'Guardar', icon: savedImg, name: 'bt_save', position: 1, color: 'white',
+    },
+
+    {
+        text: 'Eliminar', icon: delete_Img, name: 'bt_delete', position: 2, color: 'white',
+    },
+];
 
 function AdvanceRecord() {
 
-    const {dataStore} = useContext(StoreContext);
+    const {dataStore, offlineStore} = useContext(StoreContext);
     const {workOrders, detailWorkOrders} = dataStore;
+    const {saveWorkOrder} = offlineStore;
 
 
     const [filterValue, setFilterValue] = useState('');
-    const [data, setData] = useState('');
+    const [data, setData] = useState(null);
+
 
     const navigation = useNavigation();
+
+    const bt_delete = () => {
+    };
 
     const onPressBack = () => navigation.navigate('Main');
 
@@ -35,10 +52,8 @@ function AdvanceRecord() {
             const filtered = [...filteredOTCode];
             const uniqueData = [...filtered.reduce((map, obj) => map.set(obj.OTCode, obj), new Map()).values()];
             uniqueData.length === 0 && Keyboard.dismiss();
-            setData(uniqueData);
         }
         if (text === '') {
-            setData(data_);
             setFilterValue('');
             Keyboard.dismiss();
         }
@@ -46,10 +61,12 @@ function AdvanceRecord() {
     };
 
     const DetailAdvanceRecord = (item) => {
-        const {uid} = item;
-        console.log(uid)
+        const {uid, codigo, etapa, idproyecto, idurbanizacion, proyecto, urbanizacion} = item;
         const detailsWorkOrders_ = Filters(detailWorkOrders, 'uid', uid);
         dataStore.DetailWorkOrders(detailsWorkOrders_);
+        offlineStore.SaveWorkOrder({
+            ...saveWorkOrder, uid, codigo, etapa, idproyecto, idurbanizacion, proyecto, urbanizacion,
+        });
         navigation.navigate('DetailListAdvanceRecord');
     };
 
@@ -88,10 +105,15 @@ function AdvanceRecord() {
                         renderItem={renderItem}
                         estimatedItemSize={200}
                     />
-
                 </View>}
                 {(!workOrders || workOrders?.length === 0) && <NoData/>}
             </ImageBackground>
+
+            <FloatingAction
+                actions={actions}
+                color={'#007b8e'}
+                onPressItem={(name) => bt_delete(name)}
+            />
         </View>
 
         /*<View style={[tw`flex-1`, {backgroundColor: !theme ? mainColor : mainColor_}]}>

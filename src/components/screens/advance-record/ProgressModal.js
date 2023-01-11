@@ -1,72 +1,118 @@
-import React, {useContext} from 'react';
-import {Dimensions, Modal, Text, TouchableOpacity, View} from 'react-native';
+import React, {useCallback, useMemo, useState} from 'react';
+import {Text, View, TouchableOpacity, ActivityIndicator} from 'react-native';
 import tw from 'twrnc';
-import {StoreContext} from '../../../stores/Context';
 import {observer} from 'mobx-react-lite';
-import {mainColor, mainColor_, smoothColor, smoothColor_} from '../../../utils/Colors';
-import {closeIcon} from '../../../utils/Icons';
-import IconMCI from 'react-native-vector-icons/MaterialCommunityIcons';
-
-
-const windowWidth = Dimensions.get('window').width;
-const progress = [5, 10, 15, 20, 40, 60, 80, 100];
-
+import {BottomSheetModal} from '@gorhom/bottom-sheet';
+import {saveIcon_} from '../../../utils/Icons';
+import {alerts, warning} from '../../../palette/Alerts';
+import {UpdateArray} from '../../../utils/HelpFunctions';
+import {
+    deleteSaveWorkOrdersDetailId,
+    insertSaveWorkOrders, querySaveWorkOrders,
+    querySaveWorkOrdersDetailId,
+} from '../../../database/Schemas';
+import {values} from 'mobx';
 
 function ProgressModal(props) {
 
-    const {dataStore} = useContext(StoreContext);
-    const {theme} = dataStore;
+    const {bottomSheetModalRef, head, text, chaptersValues, setChapterValues, saveWorkOrder_} = props;
 
-    const {setValue, setVisibleModal, visibleModal, setSwitchIcon} = props;
+    const [loading, setLoading] = useState(false);
+
+    const snapPoints = useMemo(() => ['25%', '83%'], []);
+
+    const handleSheetChanges = useCallback((index: number) => index === -1 && setChapterValues(null), []);
+
+    const onHandleValue = async (items) => {
+        const {id_capitulo, porcentaje} = items;
+        const {id_detalle} = saveWorkOrder_[0];
+        const updateValues = UpdateArray(saveWorkOrder_, 'chapterId', id_capitulo, 'percentage', porcentaje);
+        setLoading(true);
+        const querySaveWorkOrdersDetailId_ = await querySaveWorkOrdersDetailId([id_detalle]);
+
+        if (querySaveWorkOrdersDetailId_.length === 0) {
+            await deleteSaveWorkOrdersDetailId([id_detalle]);
+
+            updateValues.map(async items => {
+                const {
+                    chapterId, codigo, uid, etapa, id, id_detalle, idproyecto, idurbanizacion, manzana, solar,
+                    modelo, descripcion, percentage, tipoordentrabajo, urbanizacion,
+                } = items;
+                const data = [chapterId, codigo, uid, etapa, id, id_detalle, idproyecto, idurbanizacion, manzana, solar, modelo, descripcion, percentage, tipoordentrabajo, urbanizacion];
+                await insertSaveWorkOrders(data);
+                setLoading(false);
+                bottomSheetModalRef.current?.dismiss();
+                alerts('success', 'PORCENTAJES GUARDADOS', `Porcentajes guardados exitosamente!`, 2500);
+            });
 
 
-    const onHandleValue = (value) => {
-        setValue(value);
-        setSwitchIcon(false);
-        setVisibleModal(false);
+        } else {
+
+            await deleteSaveWorkOrdersDetailId([id_detalle]);
+
+            updateValues.map(async items => {
+                const {
+                    chapterId, codigo, uid, etapa, id, id_detalle, idproyecto, idurbanizacion, manzana, solar,
+                    modelo, descripcion, percentage, tipoordentrabajo, urbanizacion,
+                } = items;
+                const data = [chapterId, codigo, uid, etapa, id, id_detalle, idproyecto, idurbanizacion, manzana, solar, modelo, descripcion, percentage, tipoordentrabajo, urbanizacion];
+                console.log(data);
+                await insertSaveWorkOrders(data);
+                setLoading(false);
+                bottomSheetModalRef.current?.dismiss();
+                alerts('success', 'PORCENTAJES GUARDADOS', `Porcentajes guardados exitosamente!`, 2500);
+            });
+        }
+        const q = await querySaveWorkOrdersDetailId([id_detalle]);
+        console.log('querySaveWorkOrdersDetailId_');
+        console.log(q);
     };
 
-    const percentIcon = <IconMCI name="label-percent-outline" size={24} color={!theme ? smoothColor : smoothColor_}/>;
-    const labelColor = !theme ? 'text-blue-400' : 'text-slate-600';
 
     return (
-        <Modal
-            animationType="slide"
-            transparent={true}
-            visible={visibleModal}
-            onRequestClose={() => {
-                setVisibleModal(false);
-                setSwitchIcon(false);
-            }}
-        >
-            <View style={[tw`flex-1 items-center `, {backgroundColor: 'rgba(0, 0, 0, 0.5)'}]}>
-                <View style={[tw`rounded p-3`, {
-                    width: windowWidth - 100, top: 20, backgroundColor: !theme ? mainColor : mainColor_,
-                }]}>
-                    <View style={tw`w-full items-center justify-between flex-row mb-2`}>
-                        <Text style={[tw`font-bold`, {color: !theme ? smoothColor : smoothColor_}]}>Progreso</Text>
-                        <TouchableOpacity onPress={() => {
-                            setVisibleModal(false);
-                            setSwitchIcon(false);
-                        }}>
-                            {closeIcon}
-                        </TouchableOpacity>
-                    </View>
-                    {progress.map((items, i) => {
+        <BottomSheetModal ref={bottomSheetModalRef} index={1} snapPoints={snapPoints} onChange={handleSheetChanges}>
+            <View style={tw`p-3`}>
+                <Text style={tw`text-xl text-gray-700 font-bold shrink`}>{head}</Text>
+                <Text style={tw`text-slate-600 shrink text-xs`}>{text}</Text>
+
+
+                {!chaptersValues ? warning('No se ha configurado este capítulo!') : null}
+
+                <View style={tw`w-full mt-3`}>
+                    {chaptersValues?.map((items, i) => {
+                        const {descripcion, constructionStage} = items;
                         return (
-                            <TouchableOpacity style={tw`flex-row p-2 items-center border-b border-gray-500`}
-                                              key={i} onPress={() => onHandleValue(items)}>
-                                <View style={tw`w-full flex-row items-center justify-between`}>
-                                    <Text style={tw`${labelColor} text-base font-semibold`}>{`${items}%`}</Text>
-                                    {percentIcon}
+                            <TouchableOpacity onPress={() => onHandleValue(items)} key={i}
+                                              style={tw`w-full border-b border-slate-300 py-3 flex-row items-center justify-between`}>
+                                <View>
+                                    <Text
+                                        style={tw`text-xs text-slate-700 font-semibold`}>{`PORCENTAJE : ${descripcion}`}</Text>
+                                    <Text
+                                        style={tw`text-xs text-orange-500`}>{`ESTADO : ${constructionStage ? constructionStage : ''}`}</Text>
                                 </View>
+                                {saveIcon_}
                             </TouchableOpacity>
                         );
                     })}
                 </View>
 
+                <View style={tw`w-full items-center justify-between flex-row mt-2`}>
+                    <View>
+                        {loading ?
+                            <View style={tw`w-full items-center flex-row`}>
+                                <ActivityIndicator size="small" color="gray"/>
+                                <Text style={tw`text-xs text-teal-600 ml-3`}>Guardando...</Text>
+                            </View> : null}
+                    </View>
+                    <TouchableOpacity
+                        style={tw`rounded bg-gray-50 ml-3 flex-row items-center p-2 px-4 border border-gray-200`}
+                        onPress={() => bottomSheetModalRef.current?.dismiss()} disabled={loading}>
+                        <Text style={tw`text-xs text-teal-900`}>Salir</Text>
+                    </TouchableOpacity>
+
+                </View>
             </View>
-        </Modal>
+        </BottomSheetModal>
     );
 }
 

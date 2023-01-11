@@ -34,7 +34,7 @@ export const CreateTable = async () => {
     await ExecuteQuery('CREATE TABLE IF NOT EXISTS chapters  (id INTEGER  PRIMARY KEY NOT NULL, descripcion VARCHAR(70))', []);
     await ExecuteQuery('CREATE TABLE IF NOT EXISTS percentageChapter  (id_capitulo INTEGER, id_empresa INTEGER, id_porcentaje INTEGER)', []);
     await ExecuteQuery('CREATE TABLE IF NOT EXISTS models (id INTEGER  PRIMARY KEY NOT NULL, descripcion VARCHAR(70))', []);
-    await ExecuteQuery('CREATE TABLE IF NOT EXISTS modelsChapter  (id_empresa INTEGER, id_modelo INTEGER, id_capitulo INTEGER)', []);
+    await ExecuteQuery('CREATE TABLE IF NOT EXISTS chapterModel  (id_empresa INTEGER, id_modelo INTEGER, id_capitulo INTEGER, percentage REAL)', []);
     await ExecuteQuery('CREATE TABLE IF NOT EXISTS constructionStage (id INTEGER  PRIMARY KEY NOT NULL, descripcion VARCHAR(40))', []);
     await ExecuteQuery('CREATE TABLE IF NOT EXISTS constructionStageChapter (id_capitulo INTEGER, id_empresa INTEGER, id_etapaconstructiva INTEGER, id_porcentaje INTEGER)', []);
     await ExecuteQuery('CREATE TABLE IF NOT EXISTS getProjects (id INTEGER  PRIMARY KEY NOT NULL, descripcion VARCHAR(40))', []);
@@ -44,6 +44,7 @@ export const CreateTable = async () => {
     await ExecuteQuery('CREATE TABLE IF NOT EXISTS projectStages (id INTEGER, descripcion VARCHAR(40))', []);
     await ExecuteQuery('CREATE TABLE IF NOT EXISTS workOrders (id INTEGER  PRIMARY KEY NOT NULL, uid VARCHAR(50), codigo VARCHAR(25), idproyecto INTEGER, proyecto VARCHAR(50), idurbanizacion INTEGER,  urbanizacion VARCHAR(40), etapa VARCHAR(20), fechaemision VARCHAR(40), tiempoejecucion VARCHAR(25))', []);
     await ExecuteQuery('CREATE TABLE IF NOT EXISTS detailWorkOrders (uid VARCHAR(50), id_detalle INTEGER, manzana INTEGER, solar INTEGER, modelo VARCHAR(25), descripcion VARCHAR(50), fechaespecificaciontecnica VARCHAR(40), tipoordentrabajo VARCHAR(40))', []);
+    await ExecuteQuery('CREATE TABLE IF NOT EXISTS saveWorkOrders (chapterId INTEGER, codigo VARCHAR(50), uid VARCHAR(50), etapa VARCHAR(50), id INTEGER, id_detalle INTEGER, idproyecto INTEGER, idurbanizacion INTEGER,  manzana INTEGER, solar INTEGER, modelo VARCHAR(25), descripcion VARCHAR(50), percentage REAL, proyecto VARCHAR(50), tipoordentrabajo VARCHAR(50), urbanizacion VARCHAR(50))', []);
 };
 
 /*USER DATA*/
@@ -140,16 +141,18 @@ export const deleteModels = async () => await ExecuteQuery(DELETE_MODELS, []);
 
 /*MODELS CHAPTER*/
 
-const QUERY_MODELS_CHAPTER = 'SELECT * FROM modelsChapter';
-const INSERT_MODELS_CHAPTER = 'INSERT INTO modelsChapter (id_empresa, id_modelo, id_capitulo) VALUES ( ?, ?, ?)';
-const DELETE_MODELS_CHAPTER = 'DELETE FROM modelsChapter';
+const QUERY_CHAPTER_MODELS = 'SELECT * FROM chapterModel';
+const INSERT_CHAPTER_MODELS = 'INSERT INTO chapterModel (id_empresa, id_modelo, id_capitulo, percentage) VALUES ( ?, ?, ?, ?)';
+const UPDATE_CHAPTER_MODELS = 'UPDATE chapterModel SET finished = ? WHERE id = ?';
+const DELETE_CHAPTER_MODELS = 'DELETE FROM chapterModel';
 
 export const queryChapterModels = async () => {
-    let selectQuery = await ExecuteQuery(QUERY_MODELS_CHAPTER, []);
+    let selectQuery = await ExecuteQuery(QUERY_CHAPTER_MODELS, []);
     return queryRows(selectQuery.rows);
 };
-export const insertChapterModels = async data => await ExecuteQuery(INSERT_MODELS_CHAPTER, data);
-export const deleteChapterModels = async () => await ExecuteQuery(DELETE_MODELS_CHAPTER, []);
+export const insertChapterModels = async data => await ExecuteQuery(INSERT_CHAPTER_MODELS, data);
+export const updateChapterModels = async data => await ExecuteQuery(UPDATE_CHAPTER_MODELS, data);
+export const deleteChapterModels = async () => await ExecuteQuery(DELETE_CHAPTER_MODELS, []);
 
 
 /*CONSTRUCTION STAGE*/
@@ -248,7 +251,9 @@ export const deleteProjectStages = async () => await ExecuteQuery(DELETE_PROJECT
 /***************************************************END SETTINGS************************************************************/
 
 
-/*DOWN LOAD WORK ORDERS*/
+/**************************************************DOWNLOAD WORK ORDERS************************************************************/
+
+/*DOWNLOAD WORK ORDERS*/
 
 const QUERY_WORK_ORDERS = 'SELECT * FROM workOrders';
 const QUERY_DETAILS_WORK_ORDERS = 'SELECT * FROM detailWorkOrders';
@@ -273,3 +278,27 @@ export const deleteDetailsWorkOrders = async () => await ExecuteQuery(DELETE_DET
 
 export const insertWorkOrders = async data => await ExecuteQuery(INSERT_WORK_ORDERS, data);
 export const insertDetailsWorkOrders = async data => await ExecuteQuery(INSERT_DETAILS_WORK_ORDERS, data);
+
+/************************************************** END DOWNLOAD WORK ORDERS************************************************************/
+
+/**************************************************SAVE OFFLINE WORK ORDERS************************************************************/
+
+const QUERY_SAVE_WORK_ORDERS = 'SELECT * FROM saveWorkOrders';
+const QUERY_SAVE_WORK_ORDERS_DETAIL_ID = 'SELECT * FROM saveWorkOrders WHERE  id_detalle = ?';
+const DELETE_SAVE_WORK_ORDERS = 'DELETE FROM saveWorkOrders';
+const DELETE_SAVE_WORK_ORDERS_DETAIL_ID = 'DELETE FROM saveWorkOrders WHERE id_detalle = ?';
+const INSERT_SAVE_WORK_ORDERS = 'INSERT INTO saveWorkOrders (chapterId, codigo, uid, etapa, id, id_detalle, idproyecto, idurbanizacion,  manzana, solar, modelo, descripcion, percentage, tipoordentrabajo, urbanizacion) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
+export const querySaveWorkOrders = async () => {
+    let selectQuery = await ExecuteQuery(QUERY_SAVE_WORK_ORDERS, []);
+    return queryRows(selectQuery.rows);
+};
+export const querySaveWorkOrdersDetailId = async query => {
+    let selectQuery = await ExecuteQuery(QUERY_SAVE_WORK_ORDERS_DETAIL_ID, query);
+    return queryRows(selectQuery.rows);
+};
+export const insertSaveWorkOrders = async data => await ExecuteQuery(INSERT_SAVE_WORK_ORDERS, data);
+export const deleteSaveWorkOrders = async () => await ExecuteQuery(DELETE_SAVE_WORK_ORDERS, []);
+export const deleteSaveWorkOrdersDetailId = async query  => await ExecuteQuery(DELETE_SAVE_WORK_ORDERS_DETAIL_ID, query);
+
+/**************************************************END SAVE OFFLINE WORK ORDERS************************************************************/

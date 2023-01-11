@@ -2,11 +2,12 @@ import React, {useContext} from 'react';
 import {View, Text, Image, StyleSheet, Dimensions} from 'react-native';
 import tw from 'twrnc';
 import {observer} from 'mobx-react-lite';
-import {avatarImg, logoAppImg} from '../utils/Icons';
+import {avatarImg, homeIcon_, logoAppImg} from '../utils/Icons';
 import {initLogo} from '../utils/Const';
 import IconFAW5 from 'react-native-vector-icons/FontAwesome5';
 import IconButton from './IconButton';
 import {StoreContext} from '../stores/Context';
+import {useNavigation} from '@react-navigation/native';
 
 const width = Dimensions.get('window').width;
 
@@ -14,6 +15,8 @@ function Header(props) {
 
     const {dataStore} = useContext(StoreContext);
     const {userData} = dataStore;
+
+    const navigation = useNavigation();
 
     const {text, text_2, onPressBack, back} = props;
 
@@ -27,7 +30,7 @@ function Header(props) {
                     <View style={tw`items-center w-full flex-row justify-between px-1`}>
                         <IconButton icon={arrowBackIcon} onPress={onPressBack}/>
                         <Image source={{uri: initLogo}} style={[tw`w-full`, styles.imageStyle]}/>
-                        <View/>
+                        <IconButton icon={homeIcon_} onPress={()=>navigation.navigate('Main')}/>
                     </View>}
                 <Text style={[tw`font-semibold text-white text-base`]}>{userData?.nombreUsuario}</Text>
             </View>

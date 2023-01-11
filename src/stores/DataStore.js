@@ -247,7 +247,7 @@ class DataStore {
 
             chapterModelArr.map(async items => {
                 const {id_empresa, id_modelo, id_capitulo} = items;
-                const insertValues = [id_empresa, id_modelo, id_capitulo];
+                const insertValues = [id_empresa, id_modelo, id_capitulo, 0];
                 await insertChapterModels(insertValues);
             });
 
@@ -329,10 +329,12 @@ class DataStore {
                 percentageChapter.map(pc => percentageChapterArr_.push({...pc, uid}));
             });
 
+
             const idChapters = [];
             percentageChapterArr_.map(items => idChapters.push(items.id_capitulo));
             const ids = new Set(idChapters);
             let idChapters_ = [...ids];
+
             let constructionStage_ = [];
 
             for (const idChapter of idChapters_) {
@@ -340,6 +342,7 @@ class DataStore {
                 const res = await axios.get(url);
                 constructionStage_ = [...res.data, ...constructionStage_];
             }
+
 
             constructionStage_.map(async items => {
                 const {id_capitulo, id_empresa, id_etapaconstructiva, id_porcentaje} = items;
@@ -456,9 +459,9 @@ class DataStore {
     /*Projects Stages*/
     ProjectStages = async (data, getProjects, local) => {
 
+
         if (local) {
             const result = await queryProjectStages();
-            console.og(result, '/*/*/*----');
             runInAction(() => this.projectStages = result);
         }
 

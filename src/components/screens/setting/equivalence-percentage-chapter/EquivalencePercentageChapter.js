@@ -89,6 +89,7 @@ function EquivalencePercentageChapter() {
         const idChapter = percentageChapter[0].id_capitulo;
         handlePresentModalPress();
 
+
         const url = MAIN_URL + `/etapaconstructivaporcapitulo/${idEmpresa}/${idChapter}`;
 
         let status = true;
@@ -108,6 +109,10 @@ function EquivalencePercentageChapter() {
                 });
             });
 
+            console.log('======================**======================');
+            console.log(percentageChapter)
+            console.log(constructionStageArr);
+
             let percentageChapterArr = [];
             let pc = [...percentageChapter];
             constructionStageArr.forEach(items => {
@@ -115,6 +120,8 @@ function EquivalencePercentageChapter() {
                 percentageChapterArr = UpdateTwoFields(pc, 'id', idPercentage, 'constructionStage', descripcion, 'idConstructionStage', idConstructionStage);
                 pc = percentageChapterArr;
             });
+
+            console.log(percentageChapterArr, '-****----*******-')
 
             const updateRow = {...item};
             percentageChapterArr.forEach(pc => pc.open = false);
